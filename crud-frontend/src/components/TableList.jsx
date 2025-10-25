@@ -17,7 +17,6 @@ const TableList = ({ handleOpen }) => {
     fetchData()
   }, [])
 
-  // Filter clients based on search term
   const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,9 +24,22 @@ const TableList = ({ handleOpen }) => {
       client.job.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this?'
+    )
+    if (!confirmDelete) return
+
+    try {
+      await axios.delete(`http://localhost:5000/api/clients/${id}`)
+      setClients((prev) => prev.filter((client) => client.id !== id))
+    } catch (error) {
+      console.error('Error deleting client:', error)
+    }
+  }
+
   return (
     <div>
-      {/* Search input */}
       <div className="mb-4 flex justify-center">
         <input
           type="text"
@@ -82,7 +94,7 @@ const TableList = ({ handleOpen }) => {
                   <td>
                     <button
                       className="btn btn-error"
-                      onClick={() => console.log('Delete', id)}
+                      onClick={() => handleDelete(id)}
                     >
                       Delete
                     </button>
