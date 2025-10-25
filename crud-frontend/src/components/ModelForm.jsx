@@ -1,95 +1,96 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const ModelForm = ({ isOpen, onClose, mode, onSubmit }) => {
-  const [rate, setRate] = useState('')
+const ModelForm = ({ isOpen, onClose, mode, onSubmit, clientData }) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [job, setJob] = useState('')
+  const [rate, setRate] = useState('')
   const [status, setStatus] = useState(false)
 
-  const handleStatusChange = (e) => {
-    setStatus(e.target.value === 'Active')
-  }
+  // Pre-fill form in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && clientData) {
+      setName(clientData.name)
+      setEmail(clientData.email)
+      setJob(clientData.job)
+      setRate(clientData.rate)
+      setStatus(clientData.isactive)
+    } else {
+      // reset form on add
+      setName('')
+      setEmail('')
+      setJob('')
+      setRate('')
+      setStatus(false)
+    }
+  }, [mode, clientData, isOpen])
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onClose()
+    const data = {
+      name,
+      email,
+      job,
+      rate: Number(rate),
+      isactive: status,
+    }
+    onSubmit(data)
   }
 
   return (
     <dialog className={`modal ${isOpen ? 'modal-open' : ''}`}>
       <div className="modal-box">
         <h3 className="font-bold text-lg py-4">
-          {mode === 'edit' ? 'Edit client' : 'Client details'}
+          {mode === 'edit' ? 'Edit Client' : 'Add Client'}
         </h3>
 
         <form className="space-y-3" onSubmit={handleSubmit}>
-          <div className="form-control">
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="form-control">
-            <input
-              type="email"
-              className="input input-bordered w-full"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="form-control">
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              placeholder="Job"
-              value={job}
-              onChange={(e) => setJob(e.target.value)}
-            />
-          </div>
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            type="email"
+            className="input input-bordered w-full"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            placeholder="Job"
+            value={job}
+            onChange={(e) => setJob(e.target.value)}
+          />
 
           <div className="flex gap-3">
-            <div className="form-control w-full">
-              <input
-                type="number"
-                className="input input-bordered w-full"
-                placeholder="Rate"
-                value={rate}
-                onChange={(e) => setRate(e.target.value)}
-              />
-            </div>
-
-            <div className="form-control w-full">
-              <select
-                value={status ? 'Active' : 'Inactive'}
-                className="select select-bordered w-full"
-                onChange={handleStatusChange}
-              >
-                <option>Active</option>
-                <option>Inactive</option>
-              </select>
-            </div>
+            <input
+              type="number"
+              className="input input-bordered w-full"
+              placeholder="Rate"
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+            />
+            <select
+              className="select select-bordered w-full"
+              value={status ? 'Active' : 'Inactive'}
+              onChange={(e) => setStatus(e.target.value === 'Active')}
+            >
+              <option>Active</option>
+              <option>Inactive</option>
+            </select>
           </div>
 
           <div className="modal-action">
             <button type="button" className="btn" onClick={onClose}>
               Close
             </button>
-            <button
-              type="button"
-              className="btn btn-success"
-              onClick={() => {
-                onSubmit({ name, email, job, rate, status })
-                onClose()
-              }}
-            >
-              {mode === 'edit' ? 'Save changes' : 'Add client'}
+            <button type="submit" className="btn btn-success">
+              {mode === 'edit' ? 'Save Changes' : 'Add Client'}
             </button>
           </div>
         </form>

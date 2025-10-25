@@ -1,82 +1,100 @@
-const TableList = ({ handleOpen, handleClose }) => {
-  let clients = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@gmail.com',
-      job: 'Developer',
-      rate: '130',
-      isActive: true,
-    },
-    {
-      id: 2,
-      name: 'Jane Doe',
-      email: 'jane@gmail.com',
-      job: 'Designer',
-      rate: '90',
-      isActive: false,
-    },
-    {
-      id: 3,
-      name: 'Peter Pan',
-      email: 'peter@gmail.com',
-      job: 'Architect',
-      rate: '105',
-      isActive: true,
-    },
-  ]
+import axios from 'axios'
+import { useState, useEffect } from 'react'
+
+const TableList = ({ handleOpen }) => {
+  const [clients, setClients] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/clients')
+        setClients(response.data)
+      } catch (error) {
+        console.error('Error fetching clients:', error.message)
+      }
+    }
+    fetchData()
+  }, [])
+
+  // Filter clients based on search term
+  const filteredClients = clients.filter(
+    (client) =>
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.job.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
-    <div className="overflow-x-auto mt-10">
-      <table className="table">
-        {/* head */}
-        <thead>
-          <tr>
-            <th></th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Job</th>
-            <th>Rate</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {clients.map((client) => {
-            const { id, name, email, job, rate, isActive } = client
+    <div>
+      {/* Search input */}
+      <div className="mb-4 flex justify-center">
+        <input
+          type="text"
+          placeholder="Search by name, email, or job"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input input-bordered w-full max-w-md"
+        />
+      </div>
 
-            return (
-              <tr className="hover:bg-base-300" key={id}>
-                <th>{id}</th>
-                <td>{name}</td>
-                <td>{email}</td>
-                <td>{job}</td>
-                <td>{rate}</td>
-                <td>
-                  <button
-                    className={`btn rounded-full w-20 ${
-                      isActive ? 'btn-primary' : 'btn-outline-primary'
-                    }`}
-                  >
-                    {isActive ? 'Active' : 'Inactive'}
-                  </button>
-                </td>
-                <td>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handleOpen('edit')}
-                  >
-                    Update
-                  </button>
-                </td>
-                <td>
-                  <button className="btn btn-error">Delete</button>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Job</th>
+              <th>Rate</th>
+              <th>Status</th>
+              <th>Update</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredClients.map((client) => {
+              const { id, name, email, job, rate, isactive } = client
+              return (
+                <tr className="hover:bg-base-300" key={id}>
+                  <th>{id}</th>
+                  <td>{name}</td>
+                  <td>{email}</td>
+                  <td>{job}</td>
+                  <td>{rate}</td>
+                  <td>
+                    <button
+                      className={`btn rounded-full w-20 ${
+                        isactive ? 'btn-primary' : 'btn-outline-primary'
+                      }`}
+                    >
+                      {isactive ? 'Active' : 'Inactive'}
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => handleOpen('edit', client)}
+                    >
+                      Update
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-error"
+                      onClick={() => console.log('Delete', id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
+
 export default TableList
